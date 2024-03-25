@@ -1,0 +1,55 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+static def getMaxNumericFolder(File subproject, String directory) {
+    def maxNum = -1
+    def maxFolder = null
+    def dir = new File(subproject, directory)
+    dir.eachDir { file ->
+        if (file.name.isLong()) {
+            def num = file.name.toLong()
+            if (num > maxNum) {
+                maxNum = num
+                maxFolder = file.name
+            }
+        }
+    }
+    return maxFolder
+}
+
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    tasks.register('copyFile', Copy) {
+        def latest = getMaxNumericFolder(projectDir, "../${mo_dir}")
+        from "../${mo_dir}/${latest}/global.mo"
+        into 'src/main/resources'
+    }
+
+    processResources.dependsOn(copyFile)
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                artifactId = 'l10n'
+                group = "korabli.localized"
+                from components.java
+            }
+        }
+
+        // See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
+        repositories {
+            maven {
+                name = "release"
+                url = 'https://maven.nova-committee.cn/releases'
+                credentials {
+                    username = System.getenv("MAVEN_USERNAME")
+                    password = System.getenv("MAVEN_PASSWORD")
+                }
+            }
+        }
+    }
+}
