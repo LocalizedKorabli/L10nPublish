@@ -24,8 +24,8 @@ subprojects {
     apply plugin: 'maven-publish'
 
     tasks.register('copyFile', Copy) {
-        def latest = getMaxNumericFolder(projectDir, "../${mo_dir}")
-        from "../${mo_dir}/${latest}/global.mo"
+        def latest = getMaxNumericFolder(projectDir, "../${mo_dir}/Localizations")
+        from "../${mo_dir}/Localizations/${latest}/global.mo"
         into 'src/main/resources'
     }
 
